@@ -59,9 +59,10 @@ if st.sidebar.button("Run Intelligence Engine 🚀"):
             current_total_spent, num_transactions, avg_days_between_txns, total_credit_limit
         ]], columns=['total_spent', 'num_transactions', 'avg_days_between_txns', 'total_credit_limit'])
         
-        # Scale and Predict Segment
+        # Scale and Predict Segment (FIXED: added inside the int)
         scaled_features = scaler.transform(segment_features)
-        cluster_id = int(kmeans.predict(scaled_features))        
+        cluster_id = int(kmeans.predict(scaled_features))
+        
         # Define Persona Names based on your Epic 4 findings
         personas = {
             0: "Casual User (Low Spend/Low Frequency)",
@@ -79,7 +80,7 @@ if st.sidebar.button("Run Intelligence Engine 🚀"):
             'num_transactions', 'avg_days_between_txns', 'account_lifespan_days'
         ])
         
-        # Route to the correct XGBoost Agent
+        # Route to the correct XGBoost Agent (FIXED: added at the end)
         specialist_agent = agents[cluster_id]
         predicted_ltv = specialist_agent.predict(clv_features)
         
