@@ -61,8 +61,7 @@ if st.sidebar.button("Run Intelligence Engine 🚀"):
         
         # Scale and Predict Segment
         scaled_features = scaler.transform(segment_features)
-        cluster_id = kmeans.predict(scaled_features)
-        
+        cluster_id = int(kmeans.predict(scaled_features))        
         # Define Persona Names based on your Epic 4 findings
         personas = {
             0: "Casual User (Low Spend/Low Frequency)",
