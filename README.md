@@ -1,33 +1,89 @@
-## Segmented Customer Intelligence Pipeline
-A high-performance ML pipeline for behavioral segmentation, anomaly detection, and hybrid CLV forecasting.
+Customer Intelligence ML Platform
+(Formerly hybrid-customer-intelligence)
 
-Project Strategy
-This project moves beyond standard "toy" datasets to solve a real-world financial services problem: How do we predict value when demographics are a weak signal? By pivoting from a failed demographic-only model to a Behavioral Hybrid Model, this pipeline achieved a significant reduction in prediction error ($MAE$) and identified the 20% of high-value users requiring human oversight.
+A production-grade machine learning system that processes massive transaction logs to deliver customer segmentation, fraud detection, and segmented Lifetime Value (CLV) forecasting.
 
-Technical Innovation
-  *   High-Performance ETL: Utilized Polars for memory-safe, lightning-fast data processing of large-scale transaction logs, significantly outperforming standard Pandas for initial data cleaning.
-  *   Hybrid Modeling Strategy: Engineered a dual-input XGBoost architecture that merges static demographics with dynamic transaction intensity vectors.
-  *   Specialist Agent Architecture: Rather than a "one-size-fits-all" model, I implemented four segment-specific XGBoost models. This "Specialist Agent" approach reduced prediction error for mid-tier users by nearly 10%.
-  *   Anomaly Detection: Deployed Isolation Forest to flag the top 1% of transactions, identifying potential fraud and high-value outliers for manual audit.
+**TABLE**
+1. Problem Statement
+2. System Architecture
+3. Pipeline Stages
+4. Model Performance
+5. Business Applications
+6. Quick Start (Running the Pipeline)
 
-Business Outcomes
-  *   Data-Driven Pivot: Identified that churn was only 1%, allowing the business to reallocate resources from "Retention" to "LTV Optimization."
-  *   Improved Accuracy: Reduced system-wide forecasting error from $111k to $108k, with localized error for regular users dropping to $49k.
-  *   Risk Mitigation: Automated flagging of large refunds and chargebacks, protecting bottom-line revenue.
+1. Problem Statement
+Standard demographic models fail to accurately predict customer value, and basic churn models are useless in high-retention (99%) environments. This system shifts the focus from predicting churn to identifying revenue drivers, flagging anomalies, and deploying specialized ML agents to forecast LTV based on behavioral intensity.
 
-The Tech Stack
-  *   Processing: Polars (Big Data), Pandas (ML compatibility)
-  *   Machine Learning: Scikit-Learn (K-Means, Isolation Forest), XGBoost (Gradient Boosting)
-  *   Visualization: Seaborn, Matplotlib
-  *   Deployment Ready: Serialized models using Joblib for API integration.
+2. System Architecture
+The pipeline is designed for memory efficiency and high-velocity processing, utilizing Polars to handle 13M+ rows under a strict 1.4GB memory limit before feeding structured features into the modeling layers.
 
-Project Structure (The 6 Epics)
-  *   Foundation: Polars-based ETL and Schema alignment.
-  *   Feature Engineering: Transaction intensity and frequency mapping.
-  *   Segmentation: K-Means clustering into 4 behavioral archetypes.
-  *   Security: Anomaly detection via Isolation Forest.
-  *   Forecasting: Hybrid XGBoost CLV modeling.
-  *   Optimization: Segmented "Specialist Agent" deployment.
+mermaid`
+graph TD                             
 
+    A[(Raw Transaction Logs <br/> 13M+ rows)] --> B[Data Processing & Feature Engineering <br/> Polars]
+    B --> C[Anomaly & Fraud Detection <br/> Isolation Forest]
+    B --> D[Behavioral Segmentation <br/> K-Means Clustering]
+    
+    C --> E[Suspicious Transaction Alerts]
+    D --> F[Segmented CLV Forecasting <br/> 4x XGBoost Specialist Agents]
+    
+    F --> G([Business Intelligence Outputs])
+    E -.-> G
+mermaid`
 
+[ Raw Transaction Logs (13M+ rows) ]
+                        │
+                        ▼
+   [ Data Processing & Feature Engineering (Polars) ]
+                        │
+             ┌──────────┴──────────┐
+             ▼                     ▼
+ [ Fraud Detection ]     [ Behavioral Segmentation ]
+ (Isolation Forest)        (K-Means Clustering)
+             │                     │
+             ▼                     ▼
+    [ Suspicious Alerts ]  [ Segmented CLV Forecasting ]
+             │               (4x XGBoost Agents)
+             │                     │
+             └──────────┬──────────┘
+                        ▼
+        [ Business Intelligence Outputs ]
 
+3. Pipeline Stages
+Data Ingestion & Memory Optimization: Polars lazy evaluation is used to process 13M+ transaction records. Engineered features include avg_days_between_txns and account_lifespan_days.
+
+Anomaly & Fraud Detection: Analyzes a 5M row sample to flag the top 1% of extreme transaction anomalies (fraud/chargebacks).
+
+Customer Segmentation: K-Means clustering creates 4 distinct profiles based on spending volume and engagement.
+
+Hybrid Engine Setup: Merges demographic data with behavioral intensity metrics.
+
+Specialist Agent Routing: Instead of one global model, the system routes data to 4 distinct XGBoost models, each tuned to a specific customer segment for higher forecasting accuracy.
+
+4. Model Performance
+Churn Prediction: Deprecated. Exploratory Data Analysis revealed 99% retention, making churn prediction obsolete. System pivoted to LTV maximization.
+
+Fraud Detection (Isolation Forest): Successfully flagged top 1% isolated anomalies (Contamination: 0.01) across a 5M transaction sample.
+
+Customer Segmentation (K-Means): Identified 4 actionable cohorts (Casuals, High Credit, Regulars, Volume Whales).
+
+CLV Forecasting (4x XGBoost Agents): * Baseline Model Error: $111,011 MAE
+
+Specialist Agent System Error: $108,000 MAE (Error reduced drastically for the 80% 'Everyday User' segment to ~$49k MAE).
+
+5. Business Applications
+Targeted Marketing: Allocating heavy marketing spend only to 'Volume Whales' and 'High Credit' users.
+
+Risk Mitigation: Real-time flagging of compromised accounts and massive chargeback risks.
+
+Revenue Forecasting: Providing finance teams with realistic CLV estimations based on actual user behavior, not just static demographics.
+
+6. Quick Start (Running the Pipeline)
+All models and transformers are serialized via joblib for direct FastAPI deployment.
+
+Bash
+## Install dependencies
+pip install polars pyarrow pandas scikit-learn xgboost
+
+## Run the pipeline
+python Segmented_CLV_Forecasting.py
