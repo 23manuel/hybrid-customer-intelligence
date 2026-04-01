@@ -13,25 +13,22 @@ st.markdown(
 
 # --- LOAD MODELS (Cached for speed) ---
 @st.cache_resource
-def load_models():
+def load_models_and_metadata():
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    
+    # Load Models
+    scaler = joblib.load(os.path.join(BASE_DIR, 'feature_scaler.pkl'))
+    kmeans = joblib.load(os.path.join(BASE_DIR, 'kmeans_segmenter.pkl'))
+    agents = {i: joblib.load(os.path.join(BASE_DIR, f'clv_agent_{i}.pkl')) for i in range(4)}
+    
+    # Load the Semantic Map (The FIX)
+    with open(os.path.join(BASE_DIR, 'persona_map.json'), 'r') as f:
+        # JSON keys are strings, we cast them to ints for the model
+        persona_map = {int(k): v for k, v in json.load(f).items()}
+        
+    return scaler, kmeans, agents, persona_map
 
-    scaler = joblib.load(os.path.join(BASE_DIR, "feature_scaler.pkl"))
-    kmeans = joblib.load(os.path.join(BASE_DIR, "kmeans_segmenter.pkl"))
-
-    agents = {
-        0: joblib.load(os.path.join(BASE_DIR, "clv_agent_0.pkl")),
-        1: joblib.load(os.path.join(BASE_DIR, "clv_agent_1.pkl")),
-        2: joblib.load(os.path.join(BASE_DIR, "clv_agent_2.pkl")),
-        3: joblib.load(os.path.join(BASE_DIR, "clv_agent_3.pkl")),
-    }
-    return scaler, kmeans, agents
-
-try:
-    scaler, kmeans, agents = load_models()
-except Exception as e:
-    st.error(f"Error loading models. Ensure all .pkl files are in the repository. Details: {e}")
-    st.stop()
+scaler, kmeans, agents, persona_map = load_models_and_metadata()
 
 # --- SIDEBAR: USER INPUTS ---
 st.sidebar.header("Customer Telemetry Inputs")
