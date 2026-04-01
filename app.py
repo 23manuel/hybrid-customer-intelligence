@@ -22,14 +22,18 @@ def load_models_and_metadata():
     kmeans = joblib.load(os.path.join(BASE_DIR, 'kmeans_segmenter.pkl'))
     agents = {i: joblib.load(os.path.join(BASE_DIR, f'clv_agent_{i}.pkl')) for i in range(4)}
     
-    # Load the Semantic Map (The FIX)
+    # Load the Semantic Map
     with open(os.path.join(BASE_DIR, 'persona_map.json'), 'r') as f:
         # JSON keys are strings, we cast them to ints for the model
         persona_map = {int(k): v for k, v in json.load(f).items()}
         
     return scaler, kmeans, agents, persona_map
 
-scaler, kmeans, agents, persona_map = load_models_and_metadata()
+try:
+    scaler, kmeans, agents, persona_map = load_models_and_metadata()
+except Exception as e:
+    st.error(f"Error loading assets. Is persona_map.json uploaded to GitHub? Details: {e}")
+    st.stop()
 
 # --- SIDEBAR: USER INPUTS ---
 st.sidebar.header("Customer Telemetry Inputs")
@@ -57,16 +61,10 @@ if st.sidebar.button("Run Intelligence Engine 🚀"):
         ]], columns=["total_spent", "num_transactions", "avg_days_between_txns", "total_credit_limit"])
 
         scaled_features = scaler.transform(segment_features)
-        cluster_id = int(kmeans.predict(scaled_features)[0])
+        cluster_id = int(kmeans.predict(scaled_features))
 
-        personas = {
-            0: "Volume Whale (High Spend/High Frequency)", # The math proves this is the Whale
-            1: "High Credit User (Premium Target)", 
-            2: "Casual User (Low Spend/Low Frequency)", 
-            3: "Regular User (Core Base)"
-        }
-
-        persona = personas.get(cluster_id, "Unknown Segment")
+        # THE FIX: Read directly from the JSON map, no hardcoded dictionaries!
+        persona = persona_map.get(cluster_id, "Unknown Segment")
 
         # 2. Prepare data for the Specialist Agent
         clv_features = pd.DataFrame([[
@@ -82,7 +80,7 @@ if st.sidebar.button("Run Intelligence Engine 🚀"):
             st.error(f"No specialist agent found for cluster {cluster_id}.")
             st.stop()
 
-        predicted_ltv = float(specialist_agent.predict(clv_features)[0])
+        predicted_ltv = float(specialist_agent.predict(clv_features))
 
         # --- DISPLAY RESULTS ---
         st.success("Analysis Complete.")
