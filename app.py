@@ -62,8 +62,8 @@ if st.sidebar.button("Run Intelligence Engine 🚀"):
         cluster_id = int(kmeans.predict(scaled_features)[0])
 
         personas = {
-            0: "Volume Whale (High Spend/High Frequency)", 
-            1: "High Credit User (Premium Target)",
+            0: "Volume Whale (High Spend/High Frequency)", # The math proves this is the Whale
+            1: "High Credit User (Premium Target)", 
             2: "Casual User (Low Spend/Low Frequency)", 
             3: "Regular User (Core Base)"
         }
