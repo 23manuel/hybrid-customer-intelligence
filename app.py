@@ -71,7 +71,7 @@ if st.sidebar.button("Run Intelligence Engine 🚀"):
         ])
 
         specialist_agent = agents.get(cluster_id)
-        predicted_ltv = float(specialist_agent.predict(clv_features))
+        predicted_ltv = float(specialist_agent.predict(clv_features)[0])
 
         # --- DISPLAY RESULTS ---
         st.success("Analysis Complete.")
