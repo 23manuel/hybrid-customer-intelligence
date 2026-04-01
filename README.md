@@ -337,6 +337,11 @@ Finance teams gain realistic **CLV projections based on behavioral data**, not s
 
 All trained models and transformers are serialized with **joblib** for deployment.
 
+API Deployment (FastAPI):
+To run the backend API locally for system integration:
+uvicorn api:app --reload
+Navigate to http://localhost:8000/docs to interact with the auto-generated Swagger UI and test the /predict_ltv endpoint.
+
 ---
 
 ## Install Dependencies
